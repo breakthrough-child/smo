@@ -56,7 +56,10 @@ export async function createDraft(
 
 /** Asks the server to build the steps with Claude. Safe to call again after a failure. */
 export async function buildSteps({ id, editKey }: Draft): Promise<void> {
-  const res = await fetch(`/api/guides/${id}/build`, { method: "POST", headers: { "x-edit-key": editKey } }).catch(
+  // Dev-only: /?force=ai_failed or /?force=no_steps shows those screens without calling Claude.
+  const force = process.env.NODE_ENV === "development" ? new URLSearchParams(window.location.search).get("force") : null;
+  const url = `/api/guides/${id}/build${force ? `?force=${encodeURIComponent(force)}` : ""}`;
+  const res = await fetch(url, { method: "POST", headers: { "x-edit-key": editKey } }).catch(
     () => null,
   );
   if (res?.ok) return;

@@ -13,6 +13,12 @@ export async function POST(request: Request, ctx: RouteContext<"/api/guides/[id]
   if (!check.ok) return check.response;
   const { guide } = check;
 
+  // Dev-only: ?force=ai_failed|no_steps shows those screens without calling Claude.
+  const force = new URL(request.url).searchParams.get("force");
+  if (process.env.NODE_ENV === "development" && (force === "ai_failed" || force === "no_steps")) {
+    return Response.json({ error: force }, { status: force === "no_steps" ? 422 : 502 });
+  }
+
   // One successful build per guide: never pay twice for the same frames.
   if (guide.steps.length) return Response.json({ ok: true });
 

@@ -1,19 +1,26 @@
 import { Button } from "@/components/ui/Button";
 
 export type Progress =
-  | { stage: "reading"; fraction: number }
+  | { stage: "reading"; fraction: number; screenshots?: boolean }
   | { stage: "uploading"; done: number; total: number }
   | { stage: "finding" }
   | { stage: "writing" };
 
-export type CreateFailure = "too_short" | "too_long" | "unreadable" | "ai_failed" | "no_steps" | "server_error";
+export type CreateFailure =
+  | "too_short"
+  | "too_long"
+  | "unreadable"
+  | "bad_screenshot"
+  | "ai_failed"
+  | "no_steps"
+  | "server_error";
 
 const STAGES = ["reading", "uploading", "finding", "writing"] as const;
 
 function stageText(p: Progress): string {
   switch (p.stage) {
     case "reading":
-      return "Reading your video…";
+      return p.screenshots ? "Reading your screenshots…" : "Reading your video…";
     case "uploading":
       return p.total ? `Uploading ${Math.max(p.done, 1)} of ${p.total}…` : "Uploading…";
     case "finding":
@@ -47,20 +54,24 @@ export function BuildProgress({ progress }: { progress: Progress }) {
 
 const MESSAGES: Record<CreateFailure, { title: string; body: string }> = {
   too_short: {
-    title: "That recording is too short",
+    title: "That one's very short",
     body: "That recording is too short — try recording the whole task.",
   },
   too_long: {
-    title: "Shorter is clearer!",
+    title: "That one's a bit long",
     body: "Shorter is clearer! Record just this one task, under 90 seconds.",
   },
   unreadable: {
     title: "This video won't open in your browser",
     body: "No problem — take screenshots of each step and upload those instead.",
   },
+  bad_screenshot: {
+    title: "One of those pictures won't open",
+    body: "Please choose your screenshots again — plain photos or screenshots from your phone work best.",
+  },
   ai_failed: {
     title: "Something went wrong building your guide",
-    body: "Your recording is saved, so you don't need to pick it again. Let's give it another go.",
+    body: "What you uploaded is saved, so you don't need to pick it again. Let's give it another go.",
   },
   no_steps: {
     title: "I couldn't spot any taps in this one",
@@ -77,11 +88,13 @@ export function CreateErrorScreen({
   onTryAgain,
   onChooseVideo,
   onUseScreenshots,
+  chooseLabel = "Choose another video",
 }: {
   failure: CreateFailure;
   onTryAgain?: () => void;
   onChooseVideo?: () => void;
   onUseScreenshots?: () => void;
+  chooseLabel?: string;
 }) {
   const { title, body } = MESSAGES[failure];
   return (
@@ -98,7 +111,7 @@ export function CreateErrorScreen({
         {onTryAgain && <Button onClick={onTryAgain}>Try again</Button>}
         {onChooseVideo && (
           <Button variant={onTryAgain ? "secondary" : "primary"} onClick={onChooseVideo}>
-            Choose another video
+            {chooseLabel}
           </Button>
         )}
         {onUseScreenshots && (
