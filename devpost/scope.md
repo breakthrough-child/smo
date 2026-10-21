@@ -57,3 +57,11 @@ It comes from their own family: being the person who gets called to explain the 
 - **Multiple languages:** one language proves the loop.
 - **Editing beyond move, text and delete:** the AI does the heavy lifting, and review only fixes small misses.
 - **Guide lists or dashboards:** one guide per link is the whole flow.
+
+## Build revisions
+
+The kernel, core loop and boundary held. Changes during the build (see `prd.md > Build revisions` and `spec.md > Build revisions`):
+
+- The Android checkpoint found guides with too few steps; the cause was frame dedupe dropping small changes (a ticked photo, a highlighted row), not the AI — fixed by a finer comparison.
+- Voice on Android Chrome needed workarounds for its speech quirks; the iPhone is tested in the final phone round.
+- Everything in **The POC Boundary** was built, including "Delete this guide"; circle resize stays in **Later**.

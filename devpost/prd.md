@@ -85,7 +85,7 @@ Source: `scope.md > The POC Boundary` (Review).
 ### Sharing
 Source: `scope.md > The Core Loop` (step 4).
 - Shows the tour link, a **Copy link** button (with a "Copied!" confirmation), and an editable message box prefilled with:
-  > Hi! I made you a simple step-by-step guide for [task]. Just tap the link and follow along at your own pace. 💛 [link]
+  > Hi! I made you a simple step-by-step guide for "[task]". Just tap the link and follow along at your own pace. 💛 [link]
 - **Send on WhatsApp** opens WhatsApp with **whatever is in the box**. If the helper removed the tour link from the box, the link is added back automatically on a new line at the end.
   - [ ] Tapping Send on WhatsApp on a phone opens WhatsApp with the edited message and a working link.
   - [ ] Deleting the link from the box and sending still produces a message with the link on its own last line.
@@ -166,3 +166,13 @@ Source: `scope.md > The Core Loop` (step 5), `scope.md > What "Working" Looks Li
 
 ## Open Questions
 None. Both earlier assumptions (video length limits, a removed link) were resolved by the learner.
+
+## Build revisions
+
+Behaviour that changed or was added while building (details in `devpost/checklist.md > Revisions`):
+
+- **Sharing:** the task name is shown in quotes in the prefilled message, because task names read as instructions ("…guide for \"Send a video on WhatsApp\"…").
+- **States and Boundaries:** two extra friendly states — "We couldn't save your guide" (connection or server problem, with Try again) and "One of those pictures won't open" (an unreadable screenshot). The error titles were shortened so they don't repeat the message.
+- **Reviewing and publishing:** "Delete this step" and "Delete this guide" confirm inline; a sticky bar keeps Publish / Save changes in thumb reach and shows "You have unsaved changes" / "✓ Saved — your changes are live". A review link with a wrong key no longer replaces the helper's saved key.
+- **Creating a guide:** uploads show "Uploading n of N…"; the unreadable-video screen adds an iPhone tip (Settings → Camera → Formats → Most Compatible).
+- **Known gap (deferred, as planned):** circles can't be resized, so a box that covers a whole row of icons can be moved but not shrunk; the low-confidence badge flags these.

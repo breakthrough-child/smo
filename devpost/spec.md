@@ -38,12 +38,12 @@ PRD ref: `prd.md > The Core Journey`.
    - The server makes a random edit key, stores only its SHA-256 hash, and creates the row (`status: 'draft'`).
    - It returns `{ id, editKey, uploads: [{ path, token }] }`, one signed upload link per frame.
    - The browser saves `editKey` in localStorage under `smo:key:{id}`.
-4. **Upload.** The browser uploads each JPEG straight to Supabase Storage at `guides/{id}/frame-{n}.jpg`, using the signed upload tokens. The pictures never pass through Vercel, so its 4.5 MB request limit doesn't apply.
+4. **Upload.** The browser uploads each JPEG straight to Supabase Storage at `{id}/frame-{n}.jpg` in the private `guides` bucket, using the signed upload tokens. The pictures never pass through Vercel, so its 4.5 MB request limit doesn't apply.
 5. **Build.** The browser sends `POST /api/guides/{id}/build` with the header `x-edit-key`. Progress shows "Finding the taps…", then "Writing the steps…" after about 12 s.
    - The server downloads the frames and calls Claude (`lib/ai/buildGuide.ts`), retrying once if needed.
    - It saves `steps`, `title` and `sensitive_warning`, and removes frames no step uses.
    - It returns `{ ok: true }` or a typed error: `no_steps`, `ai_failed` or `not_found`.
-6. **Review** (`/g/{id}/review#key=…`). The client reads the key from the URL fragment (falling back to localStorage) and sends `GET /api/guides/{id}` with `x-edit-key`. It gets the steps plus 1-hour signed image URLs.
+6. **Review** (`/g/{id}/review#key=…`). The client tries the key from the URL fragment, then the one in localStorage, and keeps whichever the server accepts. It sends `GET /api/guides/{id}` with `x-edit-key`. It gets the steps plus 1-hour signed image URLs.
    - Dragging, editing and deleting change local state only.
    - **Publish / Save changes** sends `PUT /api/guides/{id}` with `{ steps, publish: true }`.
    - **Delete this guide** sends `DELETE /api/guides/{id}`.
@@ -147,10 +147,10 @@ PRD ref: `prd.md > Creating a guide`. File: `lib/frames/extract.ts` (browser-onl
   - **Unreadable** if: an `error` event fires, `videoWidth === 0`, or there's no metadata within 10 s. This throws `VideoUnreadableError`.
   - Duration under 3 s or over 90 s throws `VideoTooShortError` / `VideoTooLongError`.
 - **Sampling:** for `t = 0, 0.5, 1.0 … duration`, set `currentTime`, await `seeked`, and draw to a canvas scaled so the long side is ≤ 1280 px.
-  - Each frame also gets a 32×64 grayscale thumbnail for comparison.
+  - Each frame also gets a 64×128 grayscale thumbnail for comparison.
   - The frame is exported with `canvas.toBlob('image/jpeg', 0.8)`.
-- **Duplicates:** a frame is dropped if its mean absolute thumbnail difference from the **last kept** frame is under `DUP_THRESHOLD` (start at 0.02, tune on real recordings).
-- **Selection** (`selectFrames`, a pure function with unit tests): if more than 24 frames remain, always keep the first and last. Then rank the rest by how much the *next* frame differs from them (the frame just before the biggest changes) and take the top 22. The result is returned in time order (learner's rule).
+- **Duplicates:** a frame is dropped if fewer than 1% of its thumbnail pixels (ignoring the status bar's top 6%) changed by more than 0.1 brightness compared with the **last kept** frame. Each kept frame counts how many samples it stood for (its *dwell*).
+- **Selection** (`selectFrames`, a pure function with unit tests): if more than 24 frames remain, always keep the first and last. Then rank the rest by the change to the *next* frame, with any change of 3% or more counting the same, breaking ties by dwell (settled screens before mid-animation frames), and take the top 22. The result is returned in time order (the learner's "frames just before the screen changes" rule, refined during the build).
 - **Screenshots:** `lib/frames/screenshots.ts` decodes each image (`createImageBitmap`) and resizes it to the same 1280 px JPEG 0.8. There is no duplicate dropping, and order is preserved.
 - **Known risk:** on iOS Safari, seeking a never-played video can produce black frames. Mitigation: call `video.play()` then `pause()` inside the click handler before sampling, and reject frames that are almost entirely black.
 
@@ -164,7 +164,7 @@ All handlers use `lib/supabase/server.ts` (secret key). All return JSON `{ error
 | `POST /api/guides/[id]/build` | edit key | `maxDuration = 120`. Downloads frames → `buildGuide()` → saves steps, title and `sensitive_warning` → deletes unreferenced frames. Errors: `no_steps`, `ai_failed`, `not_found`, `forbidden` |
 | `GET /api/guides/[id]` | edit key | The full guide for review, with 1-hour signed URLs |
 | `PUT /api/guides/[id]` | edit key | Validates `steps` (≥ 1 step, each instruction non-empty, target clamped to 0–1). Saves and sets `status: 'published'` when `publish: true` |
-| `DELETE /api/guides/[id]` | edit key | Removes every object under `guides/{id}/`, then the row |
+| `DELETE /api/guides/[id]` | edit key | Removes every object under `{id}/` in the bucket (failing loudly if storage errors), then the row |
 | `GET /api/guides/[id]/images` | none (published only) | Fresh 1-hour signed URLs, for tour image refresh |
 
 ### AI step builder
@@ -198,7 +198,7 @@ PRD ref: `prd.md > AI step building`. Learning goal: reliable structured output.
 ### Review
 PRD ref: `prd.md > Reviewing and publishing`.
 - `app/g/[id]/review/page.tsx` renders the `ReviewEditor` client component.
-- **Key:** `getEditKey(id)` reads `location.hash` (`#key=`), saves it to localStorage (wrapped in try/catch), and falls back to localStorage. With no key, or a 403 from the server, it shows "This link can't edit this guide."
+- **Key:** `candidateEditKeys(id)` returns the `#key=` from the link and the key in localStorage (try/catch). The editor tries each and saves only the one the server accepts, so a bad link can't overwrite a good key. If none works it shows "This link can't edit this guide."
 - `SensitiveBanner` appears when `sensitive_warning` is set.
 - `StepCard` shows the number, a `TargetImage` with a draggable circle, an instruction `<textarea>`, and **Delete step** (with confirm). Steps with confidence < 0.6 get a "Please check this step" badge.
   - **Drag:** pointer events on the circle; position is stored as a percentage of the image, clamped so the box stays inside.
@@ -254,7 +254,7 @@ RLS is **enabled with no policies**, so the publishable key can read and write n
 **Step (inside `steps`):**
 ```ts
 { id: string,            // uuid, stable for React keys / editing
-  imagePath: string,     // "guides/{id}/frame-{n}.jpg"
+  imagePath: string,     // "{id}/frame-{n}.jpg" inside the guides bucket
   instruction: string,
   spokenInstruction: string, // reset to the instruction text when the helper edits it
   target: { x: number, y: number, w: number, h: number }, // 0–1 of the image
@@ -344,7 +344,7 @@ smo/
   - `.download(path)`
   - `.createSignedUrls(paths, 3600)`
   - `.remove(paths)`
-  - `.list('guides/{id}')`
+  - `.list('{id}')`
 - **Browser call:** `storage.from('guides').uploadToSignedUrl(path, token, blob, { contentType: 'image/jpeg' })`.
 - **Docs:** https://supabase.com/docs/guides/storage/security/access-control · https://supabase.com/docs/reference/javascript/storage-from-uploadtosignedurl
 - **Cost:** the free tier is enough. Each guide is at most about 24 × ~150 KB.
@@ -392,7 +392,7 @@ smo/
 - `sensitive_warning` and `frame_count` columns added to the brief's table.
 - Unused frames are removed after the build.
 - `spokenInstruction` follows edited text.
-- Duplicate threshold of 0.02 as a starting point.
+- Duplicate threshold: 1% of pixels changed (tuned on the real Android recordings; 0.02 mean difference was the starting guess).
 - Stage 3 of the progress screen appears after about 12 s.
 
 **The useful unknown (learning goal):** *"If the API already guarantees JSON, what's left for zod and the retry to do?"*
@@ -408,3 +408,19 @@ smo/
 4. iOS Safari frame extraction produces non-black frames from a real recording.
 
 **Carried over from `prd.md > Open Questions`:** none.
+
+## Build revisions
+
+What changed while building, and why. The full log is `devpost/checklist.md > Revisions`.
+
+- **Frame dedupe and selection** (`Frame extraction (client)`): the starting rule (mean difference ≥ 0.02 on a 32×64 thumbnail) dropped small real changes — a ticked photo, a highlighted row, a typed caption — so the Android checkpoint saw ~4 steps per guide. Now: changed-pixel share on 64×128, status bar ignored, 1% threshold; selection treats any change ≥ 3% equally and prefers settled screens. The 32 s test recording keeps 21 frames instead of 16.
+- **Prompt** (`AI step builder`): added "every tap that changes the screen is its own step; never merge two taps" and "use the fully loaded frame of a screen".
+- **Speech** (`Tour`, `lib/speech.ts`): `speak()` cancels only when something is playing, waits 80 ms after a cancel, keeps a reference to the utterance, warms up voices, and retries once if speech hasn't started within 1.5 s — Android Chrome drops `speak()` right after `cancel()`.
+- **Uploads** (`Landing and Create`): 4 in parallel with one retry per frame; signed upload tokens allow overwrite; the progress screen shows "Uploading n of N…" and a bar while reading.
+- **Storage keys** (`Data Model`): objects are `{id}/frame-{n}.jpg` inside the `guides` bucket.
+- **Edit key handling** (`Review`): a key is saved only after the server accepts it.
+- **Share** (`Share`): message helpers live in `lib/share.ts` (unit-tested); the task name is quoted in the message; Copy link falls back to select-and-copy.
+- **Next.js 16 Cache Components**: pages that read params or the database are wrapped in `<Suspense>`; dev indicators are off so local demos stay clean.
+- **Testing aids**: `scripts/check-supabase.mjs` (setup check that creates the bucket if missing); dev-only `/?force=ai_failed|no_steps`; `tests/share.test.ts`. New Supabase projects don't expose new tables to the publishable key at all, which is stricter than the planned RLS-only protection.
+- **Files added beyond the plan**: `components/create/MakeGuide.tsx` (reveals the form on the landing page), `components/review/TargetImage.tsx`, `lib/createGuide.ts`, `lib/share.ts`, `docs/screenshots/`.
+- **Look and Feel**: an `--accent` text colour (coral-deep on cream, light coral on charcoal) so coral text stays readable in dark mode; the WhatsApp button uses `#0b7a3e` (5.43:1 with white).

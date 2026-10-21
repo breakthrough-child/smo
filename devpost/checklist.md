@@ -94,7 +94,7 @@ Build mode: fast (chosen in `learner-profile.md`: "build end to end without stop
   Learner check: On your phone, publish a guide, edit the message, tap Send on WhatsApp and send it to yourself. Does the message read the way you want, and does the link open the tour?
   Commit: `Add the share page with WhatsApp and copy link`
 
-- [ ] **5. Screenshots, every friendly error, and the finished landing page**
+- [x] **5. Screenshots, every friendly error, and the finished landing page**
   Becomes usable:
   - **Landing:** the full landing page with "Show it once. They've got it forever.", the 3-step explainer and **Make a guide**.
   - **Create form:**
@@ -164,4 +164,6 @@ Activity mode:
 - Wide targets (e.g. a box spanning a whole icon row) can be moved but not shrunk, since circle resize is deferred; the low-confidence badge flags them for the helper.
 - The share message puts the task name in quotes ("…guide for \"Send a video on WhatsApp\"…") — task names are written as instructions, so splicing them into the PRD sentence read awkwardly; the rest of the PRD wording is unchanged.
 - Copy link falls back to select-and-copy when the clipboard API is blocked; the tour link is built from the page's own address so preview and production links both work.
+- Final walkthrough ran in headless Chrome at 360 px in light and dark (create form and screenshot preview without submitting, review, publish → share, the full tour): 33 checks passed. The tour screenshots now wait for the signed image to load; on a slow connection the first step's screenshot can appear a moment after the instruction.
+- Claude calls this round: one video build (21 frames, ~$0.05) and one 7-screenshot build (~$0.02); error screens were forced without Claude.
 
