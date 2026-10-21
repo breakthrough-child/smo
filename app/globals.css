@@ -1,0 +1,114 @@
+@import "tailwindcss";
+
+/* Show Me Once tokens — see devpost/spec.md > Look and Feel */
+:root {
+  --cream: #fbf6ee;
+  --surface: #ffffff;
+  --ink: #2d2622;
+  --muted: #6e635a;
+  --line: #ece1d4;
+  --coral: #ef7b5f;
+  --coral-deep: #b9472a; /* 5.25:1 with white text */
+  --coral-soft: #fde6dd;
+  --sage: #6f9e80;
+  --sage-soft: #e2efe6;
+  --dim: rgba(20, 16, 12, 0.62);
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --cream: #221d1a;
+    --surface: #2c2622;
+    --ink: #f4ece3;
+    --muted: #b8ab9e;
+    --line: #3f3732;
+    --coral: #f48e74;
+    --coral-soft: #4a2e26;
+    --sage: #8fc3a2;
+    --sage-soft: #263b2f;
+    color-scheme: dark;
+  }
+}
+
+@theme inline {
+  --color-cream: var(--cream);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-coral: var(--coral);
+  --color-coral-deep: var(--coral-deep);
+  --color-coral-soft: var(--coral-soft);
+  --color-sage: var(--sage);
+  --color-sage-soft: var(--sage-soft);
+  --font-sans: var(--font-nunito), ui-rounded, system-ui, sans-serif;
+  --font-display: var(--font-fredoka), var(--font-nunito), ui-rounded, sans-serif;
+}
+
+body {
+  background: var(--cream);
+  color: var(--ink);
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  line-height: 1.15;
+}
+
+:focus-visible {
+  outline: 3px solid var(--coral-deep);
+  outline-offset: 3px;
+}
+
+/* The tour's spotlight ring: coral with a white outer outline. */
+.spot-ring {
+  box-shadow:
+    0 0 0 9999px var(--dim),
+    0 0 0 3px #fff,
+    0 0 0 9px #ef7b5f,
+    0 0 0 12px #fff;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .spot-pulse::after {
+    content: "";
+    position: absolute;
+    inset: -12px;
+    border-radius: inherit;
+    border: 4px solid #ef7b5f;
+    animation: spot-pulse 1.8s ease-out infinite;
+    pointer-events: none;
+  }
+  .spot-pulse-once::after {
+    animation: spot-pulse 0.6s ease-out 2;
+  }
+  .fade-in {
+    animation: fade-in 0.35s ease-out both;
+  }
+}
+
+@keyframes spot-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(1.35);
+    opacity: 0;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
