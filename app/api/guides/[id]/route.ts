@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { StepSchema } from "@/lib/ai/schema";
-import { requireEditor, toPublicGuide } from "@/lib/guides";
+import { removeGuideFiles, requireEditor, toPublicGuide } from "@/lib/guides";
 import { supabaseAdmin } from "@/lib/supabase/server";
 
 // The full guide for the review screen (edit key required).
@@ -39,4 +39,23 @@ export async function PUT(request: Request, ctx: RouteContext<"/api/guides/[id]"
     return Response.json({ error: "server_error" }, { status: 500 });
   }
   return Response.json({ ok: true, status });
+}
+
+// Deletes the guide's screenshots, then the guide itself.
+export async function DELETE(request: Request, ctx: RouteContext<"/api/guides/[id]">) {
+  const { id } = await ctx.params;
+  const check = await requireEditor(request, id);
+  if (!check.ok) return check.response;
+  try {
+    await removeGuideFiles(id);
+  } catch (err) {
+    console.error("[delete] removing files failed", (err as Error).message);
+    return Response.json({ error: "server_error" }, { status: 500 });
+  }
+  const { error } = await supabaseAdmin().from("guides").delete().eq("id", id);
+  if (error) {
+    console.error("[delete] row delete failed", error.message);
+    return Response.json({ error: "server_error" }, { status: 500 });
+  }
+  return Response.json({ ok: true });
 }

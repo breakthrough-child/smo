@@ -57,7 +57,7 @@ Build mode: fast (chosen in `learner-profile.md`: "build end to end without stop
   Learner check: On your **iPhone** and your **Android** phone, open the deployed site, make a guide from that phone's own recording, publish it, and open the tour link. Does the voice play after Start? Does the spotlight land on the right spots? Does tapping the circle feel natural?
   Commit: `Add the spotlight tour with voice and deploy to Vercel`
 
-- [ ] **3. The helper can fix the AI's steps and delete the guide**
+- [x] **3. The helper can fix the AI's steps and delete the guide**
   Becomes usable: Review becomes the full editor:
   - Drag the circle (and nudge it with arrow keys), edit the text (the spoken text follows it), delete a step.
   - A "Please check this step" badge on low-confidence steps, and the sensitive-content banner.
@@ -159,4 +159,7 @@ Activity mode:
 - Speech: speak() cancels only when something is playing, waits 80 ms after a cancel, keeps a reference to the utterance and retries once if it hasn't started in 1.5 s — Android Chrome drops speak() right after cancel() and can garbage-collect utterances; the checkpoint heard only "Hear again".
 - Uploads run 4 at a time with one retry per frame and show "Uploading n of N…"; signed upload tokens allow overwrite so a retry can't fail on a half-finished first try.
 - The friendly error screens arrived early (with the iPhone "Most Compatible" tip on the unreadable-video screen); the screenshot path is still slice 5.
+- The review page only saves an edit key after the server accepts it, trying the link's key and then the saved one — opening a link with a wrong key used to overwrite the good saved key and lock the helper out.
+- `removeGuideFiles` now throws on storage errors so "Delete this guide" can't report success while screenshots remain; the slice 1 build had silently left 8 unused frames online (removed).
+- Wide targets (e.g. a box spanning a whole icon row) can be moved but not shrunk, since circle resize is deferred; the low-confidence badge flags them for the helper.
 

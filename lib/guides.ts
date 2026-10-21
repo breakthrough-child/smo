@@ -79,7 +79,10 @@ export async function requireEditor(request: Request, id: string): Promise<Edito
 
 export async function removeGuideFiles(guideId: string, keep: string[] = []): Promise<void> {
   const storage = supabaseAdmin().storage.from(BUCKET);
-  const { data } = await storage.list(guideId, { limit: 100 });
+  const { data, error } = await storage.list(guideId, { limit: 100 });
+  if (error) throw new Error(`listing files failed: ${error.message}`);
   const paths = (data ?? []).map((f) => `${guideId}/${f.name}`).filter((p) => !keep.includes(p));
-  if (paths.length) await storage.remove(paths);
+  if (!paths.length) return;
+  const removed = await storage.remove(paths);
+  if (removed.error) throw new Error(`removing files failed: ${removed.error.message}`);
 }

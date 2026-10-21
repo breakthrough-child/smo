@@ -22,14 +22,18 @@ export function storedEditKey(id: string): string | null {
   }
 }
 
-/** Reads #key= from the URL (saving it), falling back to localStorage. */
+export function hashEditKey(): string | null {
+  return new URLSearchParams(window.location.hash.slice(1)).get("key");
+}
+
+/** Keys worth trying, link first. Save one only after the server accepts it, so a bad link can't overwrite a good key. */
+export function candidateEditKeys(id: string): string[] {
+  return [...new Set([hashEditKey(), storedEditKey(id)].filter((k): k is string => !!k))];
+}
+
+/** The key this browser will use for edits (the saved one, else the link's). */
 export function readEditKey(id: string): string | null {
-  const fromHash = new URLSearchParams(window.location.hash.slice(1)).get("key");
-  if (fromHash) {
-    saveEditKey(id, fromHash);
-    return fromHash;
-  }
-  return storedEditKey(id);
+  return storedEditKey(id) ?? hashEditKey();
 }
 
 export const reviewPath = (id: string, key: string) => `/g/${id}/review#key=${encodeURIComponent(key)}`;
