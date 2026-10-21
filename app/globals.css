@@ -9,6 +9,7 @@
   --line: #ece1d4;
   --coral: #ef7b5f;
   --coral-deep: #b9472a; /* 5.25:1 with white text */
+  --accent: #b9472a; /* coral text on cream */
   --coral-soft: #fde6dd;
   --sage: #6f9e80;
   --sage-soft: #e2efe6;
@@ -25,6 +26,7 @@
     --line: #3f3732;
     --coral: #f48e74;
     --coral-soft: #4a2e26;
+    --accent: #f48e74; /* coral text on charcoal */
     --sage: #8fc3a2;
     --sage-soft: #263b2f;
     color-scheme: dark;
@@ -40,6 +42,7 @@
   --color-coral: var(--coral);
   --color-coral-deep: var(--coral-deep);
   --color-coral-soft: var(--coral-soft);
+  --color-accent: var(--accent);
   --color-sage: var(--sage);
   --color-sage-soft: var(--sage-soft);
   --font-sans: var(--font-nunito), ui-rounded, system-ui, sans-serif;
