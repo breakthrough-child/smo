@@ -1,5 +1,5 @@
 // Browser-only: turns a screen recording into at most 24 JPEG frames (spec.md > Frame extraction).
-import { THUMB_H, THUMB_W, dropDuplicates, isNearlyBlack, selectFrames } from "./select";
+import { THUMB_H, THUMB_W, isDuplicate, isNearlyBlack, selectFrames } from "./select";
 
 export const MIN_SECONDS = 3;
 export const MAX_SECONDS = 90;
@@ -21,7 +21,7 @@ export type ExtractStats = {
   kept: number;
 };
 
-type Sample = { time: number; thumb: Float32Array; blob: Blob };
+type Sample = { time: number; thumb: Float32Array; blob: Blob; dwell: number };
 
 /** Call from the click handler, before any await, so iOS lets the video paint frames. */
 export function createPrimedVideo(file: File): HTMLVideoElement {
@@ -68,11 +68,14 @@ export async function extractVideoFrames(
         black++;
         continue;
       }
-      // Encode only frames that might be kept.
+      // A duplicate of the last kept frame only lengthens that screen's dwell; encode the rest.
       const prev = samples[samples.length - 1];
-      if (prev && dropDuplicates([prev, { thumb }]).length === 1) continue;
+      if (prev && isDuplicate(prev.thumb, thumb)) {
+        prev.dwell++;
+        continue;
+      }
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      samples.push({ time, thumb, blob: await toJpeg(canvas) });
+      samples.push({ time, thumb, blob: await toJpeg(canvas), dwell: 1 });
     }
 
     if (!samples.length) throw new VideoUnreadableError("every frame was black");

@@ -29,7 +29,7 @@ export async function POST(request: Request) {
   const uploads = await Promise.all(
     Array.from({ length: body.data.frameCount }, async (_, n) => {
       const path = frameKey(data.id, n);
-      const signed = await storage.createSignedUploadUrl(path);
+      const signed = await storage.createSignedUploadUrl(path, { upsert: true }); // a retried frame may overwrite
       if (signed.error) throw new Error(signed.error.message);
       return { path, token: signed.data.token };
     }),

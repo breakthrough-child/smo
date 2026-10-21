@@ -32,7 +32,7 @@ Build mode: fast (chosen in `learner-profile.md`: "build end to end without stop
   Learner check: Run `npm run dev`, open http://localhost:3000, make a guide from one of your recordings, and read the steps. Did Claude find the taps you actually made, in order, with circles on the right buttons?
   Commit: `Scaffold app and build guides from real recordings with Claude`
 
-- [ ] **2. Your parent can follow the published tour, on a real phone**
+- [x] **2. Your parent can follow the published tour, on a real phone**
   Becomes usable: A **Publish** button on the review page makes the guide live. `/g/[id]` is the full tour: Start screen, real screenshot with dimmed background, spotlight, coral/white pulsing ring, large tooltip, voice at 0.9 with Hear again, tap-the-circle to advance, "Tap the glowing circle." coaching, progress, Back, and "You did it!" with Start again. A missing or draft link shows the friendly not-found page. The app is deployed on Vercel so it can be tried on phones.
   Why now: The tour is the other half of the kernel and the demo moment. Deploying now means the iPhone Safari risks (frame extraction and speech unlock) are tested on a real phone early, while there's time to react.
   PRD ref: `prd.md > The tour`, `prd.md > States and Boundaries` (missing guide, no voice, reduced motion), `prd.md > Product Decisions` (Vercel deploy)
@@ -126,7 +126,7 @@ Build mode: fast (chosen in `learner-profile.md`: "build end to end without stop
 
 ## Hands-on Checkpoints
 
-- [ ] Early usable behavior explored — after slice 2, on the deployed URL with your iPhone and Android phone (real-phone frame extraction, voice, spotlight)
+- [x] Early usable behavior explored — after slice 2, on the deployed URL (learner pushed to GitHub and deployed on Vercel; tested on Android). Findings: only ~4 steps per guide, voice only on "Hear again", slow uploads → fixed in the post-checkpoint round. iPhone moves to the final phone tests.
 - [ ] Final kick-the-tires exploration and feedback completed
 
 ## Final Review
@@ -153,4 +153,10 @@ Activity mode:
 - The original iPhone recording is HEVC; Chromium on this Linux machine can't decode it and correctly shows the unreadable path. Real iPhone Safari extraction moves to the slice 2 phone checkpoint (it was always the iOS part of verify-early #4).
 - Added a prompt rule to prefer the fully loaded frame of a screen — the first real build attached 2 of 8 steps to mid-loading frames. Tested at slice 5's planned call, not with an extra call.
 - `@types/node` bumped to 22 — Vitest 5 requires it; the scaffold pinned 20.
+- Dedupe now counts the share of clearly changed pixels on a 64×128 thumbnail, ignoring the status bar, with a 1% threshold — the Android checkpoint's "only 4 steps" came from the 32×64 mean-difference rule dropping small real changes (a ticked photo, a highlighted row, a typed caption). The 32 s test recording keeps 21 frames instead of 16.
+- Frame selection still keeps "the frames just before screen changes", but any change ≥ 3% counts equally and screens that stayed put win ties — ranking by raw change size was discarding the settled screen before a tick in favour of mid-animation frames.
+- The prompt now says every tap that changes the screen is its own step and never to merge taps.
+- Speech: speak() cancels only when something is playing, waits 80 ms after a cancel, keeps a reference to the utterance and retries once if it hasn't started in 1.5 s — Android Chrome drops speak() right after cancel() and can garbage-collect utterances; the checkpoint heard only "Hear again".
+- Uploads run 4 at a time with one retry per frame and show "Uploading n of N…"; signed upload tokens allow overwrite so a retry can't fail on a half-finished first try.
+- The friendly error screens arrived early (with the iPhone "Most Compatible" tip on the unreadable-video screen); the screenshot path is still slice 5.
 

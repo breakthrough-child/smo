@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { Target } from "@/lib/ai/schema";
-import { speak, speechSupported, stopSpeaking } from "@/lib/speech";
+import { speak, speechSupported, stopSpeaking, warmUpVoices } from "@/lib/speech";
 import { Spotlight } from "./Spotlight";
 
 export type TourStep = { id: string; url: string; instruction: string; spokenInstruction: string; target: Target };
@@ -25,13 +25,15 @@ export function Tour({ guideId, title, steps: initialSteps }: { guideId: string;
     // Feature detection has to wait for the browser.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     if (!speechSupported()) setVoice(false);
+    else warmUpVoices();
     return () => {
       clearTimeout(coachTimer.current);
       stopSpeaking();
     };
   }, []);
 
-  // Every move happens inside a tap, so speech stays unlocked on iOS.
+  // Every move happens inside a tap (Start, Next, Back, the circle), so speech stays unlocked on iOS;
+  // speak() cancels whatever is still playing first.
   function goTo(next: Screen) {
     clearTimeout(coachTimer.current);
     setCoaching(false);

@@ -10,14 +10,22 @@ export class CreateError extends Error {
   }
 }
 
-/** Creates the draft and uploads the frames straight to the private bucket. */
-export async function createDraft(title: string, frames: Blob[]): Promise<{ id: string; editKey: string }> {
+const PARALLEL_UPLOADS = 4;
+
+export type Draft = { id: string; editKey: string };
+
+/** Creates the draft and uploads the frames straight to the private bucket, 4 at a time. */
+export async function createDraft(
+  title: string,
+  frames: Blob[],
+  onUploaded?: (done: number, total: number) => void,
+): Promise<Draft> {
   const res = await fetch("/api/guides", {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ title, frameCount: frames.length }),
-  });
-  if (!res.ok) throw new CreateError("server_error");
+  }).catch(() => null);
+  if (!res?.ok) throw new CreateError("server_error");
   const { id, editKey, uploads } = (await res.json()) as {
     id: string;
     editKey: string;
@@ -26,21 +34,32 @@ export async function createDraft(title: string, frames: Blob[]): Promise<{ id: 
   saveEditKey(id, editKey);
 
   const storage = supabaseBrowser().storage.from("guides");
+  const upload = async (path: string, token: string, blob: Blob) => {
+    const { error } = await storage.uploadToSignedUrl(path, token, blob, { contentType: "image/jpeg", upsert: true });
+    return !error;
+  };
+
+  let done = 0;
+  onUploaded?.(0, frames.length);
   const queue = uploads.map((u, n) => ({ ...u, blob: frames[n] }));
   const worker = async () => {
     for (let item = queue.shift(); item; item = queue.shift()) {
-      const { error } = await storage.uploadToSignedUrl(item.path, item.token, item.blob, { contentType: "image/jpeg" });
-      if (error) throw new CreateError("server_error");
+      // One retry per frame, for flaky mobile connections.
+      const ok = (await upload(item.path, item.token, item.blob)) || (await upload(item.path, item.token, item.blob));
+      if (!ok) throw new CreateError("server_error");
+      onUploaded?.(++done, frames.length);
     }
   };
-  await Promise.all([worker(), worker(), worker(), worker()]);
+  await Promise.all(Array.from({ length: PARALLEL_UPLOADS }, worker));
   return { id, editKey };
 }
 
 /** Asks the server to build the steps with Claude. Safe to call again after a failure. */
-export async function buildSteps(id: string, editKey: string): Promise<void> {
-  const res = await fetch(`/api/guides/${id}/build`, { method: "POST", headers: { "x-edit-key": editKey } });
-  if (res.ok) return;
-  const body = (await res.json().catch(() => ({}))) as { error?: string };
-  throw new CreateError(body.error === "no_steps" ? "no_steps" : body.error === "ai_failed" ? "ai_failed" : "server_error");
+export async function buildSteps({ id, editKey }: Draft): Promise<void> {
+  const res = await fetch(`/api/guides/${id}/build`, { method: "POST", headers: { "x-edit-key": editKey } }).catch(
+    () => null,
+  );
+  if (res?.ok) return;
+  const body = (await res?.json().catch(() => ({}))) as { error?: string } | undefined;
+  throw new CreateError(body?.error === "no_steps" ? "no_steps" : body?.error === "ai_failed" ? "ai_failed" : "server_error");
 }

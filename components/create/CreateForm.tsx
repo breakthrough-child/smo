@@ -3,24 +3,35 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
-import { createPrimedVideo, extractVideoFrames } from "@/lib/frames/extract";
-import { buildSteps, createDraft } from "@/lib/createGuide";
+import {
+  VideoTooLongError,
+  VideoTooShortError,
+  VideoUnreadableError,
+  createPrimedVideo,
+  extractVideoFrames,
+} from "@/lib/frames/extract";
+import { CreateError, buildSteps, createDraft, type Draft } from "@/lib/createGuide";
 import { reviewPath } from "@/lib/editKeyClient";
+import { BuildProgress, CreateErrorScreen, type CreateFailure, type Progress } from "./BuildProgress";
 
-type Stage = "reading" | "finding" | "writing";
+const WRITING_AFTER_MS = 12_000;
 
-const STAGE_TEXT: Record<Stage, string> = {
-  reading: "Reading your video…",
-  finding: "Finding the taps…",
-  writing: "Writing the steps…",
-};
+type Phase = { name: "form" } | { name: "working"; progress: Progress } | { name: "failed"; failure: CreateFailure };
+
+function toFailure(err: unknown): CreateFailure {
+  if (err instanceof VideoTooShortError) return "too_short";
+  if (err instanceof VideoTooLongError) return "too_long";
+  if (err instanceof VideoUnreadableError) return "unreadable";
+  if (err instanceof CreateError) return err.code;
+  return "server_error";
+}
 
 export function CreateForm() {
   const router = useRouter();
   const [task, setTask] = useState("");
   const [video, setVideo] = useState<File | null>(null);
-  const [stage, setStage] = useState<Stage | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [phase, setPhase] = useState<Phase>({ name: "form" });
+  const draft = useRef<Draft | null>(null); // kept so "Try again" re-runs only the build
   const writingTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   useEffect(() => () => clearTimeout(writingTimer.current), []);
@@ -32,33 +43,66 @@ export function CreateForm() {
       (await extractVideoFrames(createPrimedVideo(file))).stats;
   }, []);
 
-  const ready = task.trim().length > 0 && video !== null && stage === null;
+  const ready = task.trim().length > 0 && video !== null;
+  const setProgress = (progress: Progress) => setPhase({ name: "working", progress });
+
+  async function build(d: Draft) {
+    setProgress({ stage: "finding" });
+    clearTimeout(writingTimer.current);
+    writingTimer.current = setTimeout(() => setProgress({ stage: "writing" }), WRITING_AFTER_MS);
+    await buildSteps(d);
+    clearTimeout(writingTimer.current);
+    router.push(reviewPath(d.id, d.editKey));
+  }
 
   async function makeGuide() {
     if (!video) return;
     const primed = createPrimedVideo(video); // before any await, for iOS
-    setError(null);
-    setStage("reading");
+    draft.current = null;
+    setProgress({ stage: "reading", fraction: 0 });
     try {
-      const { frames } = await extractVideoFrames(primed);
-      const { id, editKey } = await createDraft(task.trim(), frames);
-      setStage("finding");
-      writingTimer.current = setTimeout(() => setStage("writing"), 12_000);
-      await buildSteps(id, editKey);
-      router.push(reviewPath(id, editKey));
+      const { frames } = await extractVideoFrames(primed, (fraction) => setProgress({ stage: "reading", fraction }));
+      draft.current = await createDraft(task.trim(), frames, (done, total) =>
+        setProgress({ stage: "uploading", done, total }),
+      );
+      await build(draft.current);
     } catch (err) {
-      clearTimeout(writingTimer.current);
-      setStage(null);
-      setError(err instanceof Error ? `${err.constructor.name}: ${err.message}` : "Something went wrong");
+      fail(err);
     }
   }
 
-  if (stage) {
+  async function tryBuildAgain() {
+    if (!draft.current) return makeGuide();
+    try {
+      await build(draft.current);
+    } catch (err) {
+      fail(err);
+    }
+  }
+
+  function fail(err: unknown) {
+    clearTimeout(writingTimer.current);
+    console.warn("[create] failed", err);
+    setPhase({ name: "failed", failure: toFailure(err) });
+  }
+
+  function chooseAnotherVideo() {
+    // Opening the picker programmatically isn't allowed outside a direct tap on iOS, so just reset the form.
+    setVideo(null);
+    setPhase({ name: "form" });
+  }
+
+  if (phase.name === "working") return <BuildProgress progress={phase.progress} />;
+
+  if (phase.name === "failed") {
+    const f = phase.failure;
+    const videoProblem = f === "too_short" || f === "too_long" || f === "unreadable";
     return (
-      <div className="rounded-3xl bg-surface p-8 text-center shadow-sm" role="status" aria-live="polite">
-        <p className="font-display text-2xl">{STAGE_TEXT[stage]}</p>
-        <p className="mt-3 text-muted">Please keep this page open.</p>
-      </div>
+      <CreateErrorScreen
+        failure={f}
+        onTryAgain={f === "ai_failed" || f === "server_error" ? tryBuildAgain : f === "no_steps" ? chooseAnotherVideo : undefined}
+        onChooseVideo={videoProblem ? chooseAnotherVideo : undefined}
+      />
     );
   }
 
@@ -89,8 +133,12 @@ export function CreateForm() {
           onChange={(e) => setVideo(e.target.files?.[0] ?? null)}
         />
       </label>
-      {error && <p className="rounded-2xl bg-coral-soft p-4" role="alert">{error}</p>}
-      <Button type="submit" disabled={!ready}>Make my guide</Button>
+      <p className="rounded-2xl bg-cream p-4 text-base text-muted">
+        🔒 Please don&apos;t record passwords, PINs or bank balances.
+      </p>
+      <Button type="submit" disabled={!ready}>
+        Make my guide
+      </Button>
     </form>
   );
 }

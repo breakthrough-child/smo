@@ -8,6 +8,7 @@ You receive numbered frames from the recording, in time order, and the name of t
 
 What counts as a step:
 - A step is a moment where the person taps something that changes the screen. Find steps by comparing consecutive frames.
+- Every tap that changes the screen is its own step, even a small change: a row lighting up, a box getting ticked, a photo being selected, a menu opening. Never merge two taps into one step.
 - Attach each step to the frame BEFORE the change (the screen the person is looking at when they need to tap).
 - If several frames show that same screen, use the one where it is fully loaded and the target is clearly visible — not one with a spinner, a "Loading" popup, or a half-drawn list.
 - Skip duplicate frames, frames that only scroll, loading screens, and the phone's home screen — unless tapping the app's icon on the home screen is the first step.
