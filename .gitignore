@@ -1,0 +1,25 @@
+# Personal learning context — keep out of commits
+/devpost/learner-profile.md
+
+# Local credentials
+.env
+.env.*
+!.env.example
+
+# Private test recordings (real WhatsApp screens)
+/test-recordings/
+
+# Next.js / Node
+/node_modules/
+/.next/
+/out/
+/build/
+/coverage/
+*.tsbuildinfo
+next-env.d.ts
+.vercel
+npm-debug.log*
+.DS_Store
+
+# Local tool settings
+/.claude/settings.local.json

@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Show Me Once — Scope</title>
+<style>
+  :root {
+    --bg: #fbf7f2; --card: #ffffff; --ink: #2b2622; --muted: #6f655c;
+    --line: #e8ded3; --accent: #e07a5f; --accent-soft: #fbe3da;
+    --sage: #6a9a7b; --sage-soft: #dfeee4; --sky: #5b8db8; --sky-soft: #dde9f4;
+    --cut: #a1958a; --cut-soft: #efe9e3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #1f1b18; --card: #2a2521; --ink: #f3ece4; --muted: #b5a99c;
+      --line: #3d3631; --accent: #f0937a; --accent-soft: #4a2f27;
+      --sage: #8cc19f; --sage-soft: #263a2e; --sky: #8bb6dc; --sky-soft: #22323f;
+      --cut: #9a8f85; --cut-soft: #332d29;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+    font: 17px/1.6 ui-rounded, "SF Pro Rounded", "Nunito", system-ui, sans-serif; }
+  main { max-width: 860px; margin: 0 auto; padding: 32px 16px 64px; }
+  header .tag { display: inline-block; font-size: 13px; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--accent); background: var(--accent-soft); padding: 4px 12px; border-radius: 999px; }
+  h1 { font-size: clamp(32px, 6vw, 48px); margin: 12px 0 4px; line-height: 1.1; }
+  .lede { font-size: 20px; color: var(--muted); margin: 0 0 8px; }
+  .tagline { font-style: italic; color: var(--accent); }
+  section { background: var(--card); border: 1px solid var(--line); border-radius: 20px;
+    padding: 24px; margin-top: 20px; }
+  h2 { font-size: 22px; margin: 0 0 12px; }
+  .kernel { border: 2px solid var(--accent); background: linear-gradient(var(--accent-soft), var(--card)); }
+  .kernel p { font-size: 19px; margin: 0; }
+  .people { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+  .person { border-radius: 16px; padding: 16px; }
+  .person.helper { background: var(--sky-soft); }
+  .person.learner { background: var(--sage-soft); }
+  .person b { display: block; margin-bottom: 4px; }
+  svg { width: 100%; height: auto; display: block; }
+  svg text { font-family: inherit; fill: var(--ink); }
+  .flow-steps { display: none; }
+  details { border: 1px solid var(--line); border-radius: 14px; padding: 0 16px; margin-top: 10px; }
+  details[open] { padding-bottom: 12px; }
+  summary { cursor: pointer; padding: 14px 0; font-weight: 700; list-style: none; display: flex; align-items: center; gap: 10px; }
+  summary::-webkit-details-marker { display: none; }
+  summary::after { content: "+"; margin-left: auto; font-size: 22px; color: var(--muted); }
+  details[open] summary::after { content: "–"; }
+  .pill { font-size: 12px; padding: 2px 10px; border-radius: 999px; font-weight: 700; }
+  .now .pill { background: var(--sage-soft); color: var(--sage); }
+  .later .pill { background: var(--sky-soft); color: var(--sky); }
+  .cut .pill { background: var(--cut-soft); color: var(--cut); }
+  ul { margin: 0; padding-left: 20px; }
+  li { margin: 4px 0; }
+  .done li::marker { content: "✓  "; color: var(--sage); }
+  .wow { margin-top: 14px; padding: 14px 16px; border-radius: 14px; background: var(--accent-soft); }
+  footer { margin-top: 28px; color: var(--muted); font-size: 14px; text-align: center; }
+  @media (max-width: 560px) {
+    .flow-svg { display: none; }
+    .flow-steps { display: block; }
+    section { padding: 18px; }
+  }
+  .flow-steps ol { padding-left: 22px; margin: 0; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <span class="tag">Scope · approved</span>
+    <h1>Show Me Once</h1>
+    <p class="lede">Show a phone task once on video, and AI turns it into an onboarding-style tour your parents can follow alone, on any app.</p>
+    <p class="tagline">“Show it once. They've got it forever.”</p>
+  </header>
+
+  <section class="kernel">
+    <h2>The unique kernel</h2>
+    <p>One recording → a tour built from <b>real screenshots of the real app</b>, with a spotlight on exactly what to tap and the instruction read aloud. Their screens, the way the helper actually did it. Works for any app.</p>
+  </section>
+
+  <section>
+    <h2>Who it's for</h2>
+    <div class="people">
+      <div class="person helper"><b>👩 Helper (creates)</b>Adult child who keeps getting called to explain the same task. Today: explaining over the phone, frustrating for both.</div>
+      <div class="person learner"><b>👵 Learner (follows)</b>Parent or grandparent, not confident with phones. Needs big text, one step at a time, a clear “tap here”, spoken instructions.</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>The core loop</h2>
+    <svg class="flow-svg" viewBox="0 0 820 300" role="img" aria-label="Flow: helper records, AI builds steps, helper reviews, sends on WhatsApp, parent follows the tour, parent comes back when they forget">
+      <defs>
+        <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="var(--muted)"/>
+        </marker>
+      </defs>
+      <text x="20" y="24" font-size="13" fill="var(--sky)" style="fill:var(--sky);font-weight:700">HELPER</text>
+      <g>
+        <rect x="20" y="40" width="160" height="80" rx="16" fill="var(--sky-soft)"/>
+        <text x="100" y="74" text-anchor="middle" font-size="16" font-weight="700">1 · Record</text>
+        <text x="100" y="96" text-anchor="middle" font-size="13">video or screenshots</text>
+      </g>
+      <g>
+        <rect x="220" y="40" width="160" height="80" rx="16" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2"/>
+        <text x="300" y="74" text-anchor="middle" font-size="16" font-weight="700">2 · AI builds</text>
+        <text x="300" y="96" text-anchor="middle" font-size="13">steps + tap targets</text>
+      </g>
+      <g>
+        <rect x="420" y="40" width="160" height="80" rx="16" fill="var(--sky-soft)"/>
+        <text x="500" y="74" text-anchor="middle" font-size="16" font-weight="700">3 · Review</text>
+        <text x="500" y="96" text-anchor="middle" font-size="13">move circle, edit, publish</text>
+      </g>
+      <g>
+        <rect x="620" y="40" width="180" height="80" rx="16" fill="var(--sky-soft)"/>
+        <text x="710" y="74" text-anchor="middle" font-size="16" font-weight="700">4 · Send</text>
+        <text x="710" y="96" text-anchor="middle" font-size="13">on WhatsApp</text>
+      </g>
+      <line x1="180" y1="80" x2="218" y2="80" stroke="var(--muted)" stroke-width="2" marker-end="url(#arr)"/>
+      <line x1="380" y1="80" x2="418" y2="80" stroke="var(--muted)" stroke-width="2" marker-end="url(#arr)"/>
+      <line x1="580" y1="80" x2="618" y2="80" stroke="var(--muted)" stroke-width="2" marker-end="url(#arr)"/>
+      <path d="M710,120 L710,170" stroke="var(--muted)" stroke-width="2" fill="none" marker-end="url(#arr)"/>
+      <text x="20" y="186" font-size="13" style="fill:var(--sage);font-weight:700">PARENT</text>
+      <g>
+        <rect x="420" y="174" width="380" height="96" rx="16" fill="var(--sage-soft)" stroke="var(--sage)" stroke-width="2"/>
+        <text x="610" y="210" text-anchor="middle" font-size="16" font-weight="700">5 · Follow the tour alone</text>
+        <text x="610" y="234" text-anchor="middle" font-size="13">real screenshot · spotlight · read aloud</text>
+        <text x="610" y="254" text-anchor="middle" font-size="13">“Got it, next” → “You did it!”</text>
+      </g>
+      <path d="M420,222 C300,222 260,222 240,222" stroke="var(--muted)" stroke-width="2" stroke-dasharray="5 5" fill="none" marker-end="url(#arr)"/>
+      <text x="20" y="216" font-size="13" fill="var(--muted)" style="fill:var(--muted)">forgot again?</text>
+      <text x="20" y="234" font-size="13" fill="var(--muted)" style="fill:var(--muted)">reopen the same link</text>
+    </svg>
+    <div class="flow-steps">
+      <ol>
+        <li><b>Record</b>: helper uploads a 3–90 s screen recording (or 2–15 screenshots) + task name.</li>
+        <li><b>AI builds</b>: picks the real steps, finds what was tapped, writes plain instructions.</li>
+        <li><b>Review</b>: move the circle, edit text, delete a step, publish.</li>
+        <li><b>Send</b>: the link on WhatsApp.</li>
+        <li><b>Parent follows alone</b>: spotlight, read aloud, “Got it, next” → “You did it!”. Reopens the link whenever they forget.</li>
+      </ol>
+    </div>
+  </section>
+
+  <section>
+    <h2>What “working” looks like</h2>
+    <ul class="done">
+      <li>A real WhatsApp recording → published tour with correct steps; only minor circle moves.</li>
+      <li>Both phones tested for real: an iPhone recording and an Android recording each → correct published tour. If either video can't be decoded, the friendly message appears and that phone's screenshots work via the fallback.</li>
+      <li>Tour works end to end in a phone browser, with audio.</li>
+      <li>Deployed on Vercel at a real public URL.</li>
+      <li>Friendly messages for undecodable video, AI failure, no steps found, missing guide.</li>
+    </ul>
+    <div class="wow"><b>The “oh, that's cool” moment:</b> their parent opens the WhatsApp link on her own phone and follows the tour — spotlight and voice — without help.</div>
+  </section>
+
+  <section>
+    <h2>The boundary</h2>
+    <details class="now" open>
+      <summary><span class="pill">NOW</span> The proof of concept</summary>
+      <ul>
+        <li>Create: video with client-side frame extraction, or 2–15 screenshots; task name.</li>
+        <li>AI: server-side Claude vision → strict JSON, zod-validated, one retry; low-confidence steps flagged.</li>
+        <li>Review: drag-to-move circle, edit text, delete step, publish; sensitive-content banner; “don't record passwords” notice.</li>
+        <li>Share: link, “Send on WhatsApp”, copy link.</li>
+        <li>Tour: spotlight, pulsing ring, large tooltip, speech + “Hear again”, Back/Next, progress, completion.</li>
+        <li>Unguessable links; edit token in the creator's browser.</li>
+        <li><b>“Delete this guide”</b> — checks the edit token, removes the row and its frames.</li>
+        <li>Vercel deploy; README; scope/prd/spec committed.</li>
+      </ul>
+    </details>
+    <details class="later">
+      <summary><span class="pill">LATER</span> Stretch</summary>
+      <ul>
+        <li><b>Circle resize</b> — drag-to-move only for now.</li>
+              </ul>
+    </details>
+    <details class="cut">
+      <summary><span class="pill">CUT</span> And why</summary>
+      <ul>
+        <li><b>Accounts/login</b> — the edit token is enough for one helper.</li>
+        <li><b>Payments, analytics</b> — don't prove the kernel.</li>
+        <li><b>Live overlay, native apps</b> — the web tour over real screenshots <i>is</i> the idea.</li>
+        <li><b>Multiple languages</b> — one proves the loop.</li>
+        <li><b>Editing beyond move/text/delete</b> — review fixes small misses only.</li>
+        <li><b>Guide lists, dashboards</b> — one guide per link is the flow.</li>
+      </ul>
+    </details>
+  </section>
+
+  <section>
+    <h2>Feel</h2>
+    <p style="margin:0">Warm, calm, reassuring, never techy — soft colors, rounded shapes, a friendly display font. “A patient person sitting next to you.” Big text, big buttons, high contrast, light and dark, reduced motion respected.</p>
+  </section>
+
+  <footer>Companion to <code>devpost/scope.md</code> — the Markdown is canonical.</footer>
+</main>
+</body>
+</html>

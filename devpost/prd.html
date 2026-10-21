@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Show Me Once — PRD</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #fbf6ee; --card: #ffffff; --ink: #2d2622; --muted: #6e635a; --line: #ece1d4;
+    --coral: #ef7b5f; --coral-deep: #c4502f; --coral-soft: #fde6dd;
+    --sage: #6f9e80; --sage-soft: #e2efe6; --dim: rgba(30,24,20,.62);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #221d1a; --card: #2c2622; --ink: #f4ece3; --muted: #b8ab9e; --line: #3f3732;
+      --coral: #f48e74; --coral-deep: #c4502f; --coral-soft: #4a2e26;
+      --sage: #8fc3a2; --sage-soft: #263b2f;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 17px/1.6 "Nunito", ui-rounded, system-ui, sans-serif; }
+  h1, h2, h3 { font-family: "Fredoka", "Nunito", ui-rounded, sans-serif; font-weight: 600; line-height: 1.15; }
+  main { max-width: 900px; margin: 0 auto; padding: 32px 16px 64px; }
+  .tag { display: inline-block; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--coral-deep);
+    background: var(--coral-soft); padding: 4px 12px; border-radius: 999px; font-weight: 700; }
+  h1 { font-size: clamp(32px, 6vw, 46px); margin: 12px 0 6px; }
+  .lede { color: var(--muted); font-size: 19px; margin: 0; }
+  section { background: var(--card); border: 1px solid var(--line); border-radius: 22px; padding: 24px; margin-top: 20px; }
+  h2 { margin: 0 0 12px; font-size: 24px; }
+  .grew { background: var(--coral-soft); border-radius: 16px; padding: 14px 16px; margin: 0; }
+  svg { width: 100%; height: auto; display: block; }
+  svg text { font-family: "Nunito", system-ui, sans-serif; fill: var(--ink); }
+  .journey-list { display: none; }
+  @media (max-width: 600px) { .journey-svg { display: none; } .journey-list { display: block; } section { padding: 18px; } }
+
+  /* Screen explorer */
+  .tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+  .tabs button { font: inherit; font-weight: 700; border: 2px solid var(--line); background: var(--bg); color: var(--ink);
+    border-radius: 999px; padding: 8px 16px; cursor: pointer; min-height: 44px; }
+  .tabs button[aria-selected="true"] { background: var(--coral-deep); border-color: var(--coral-deep); color: #fff; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .panel h3 { margin: 0 0 4px; font-size: 21px; }
+  .addr { font-family: ui-monospace, monospace; font-size: 14px; color: var(--muted); }
+  .cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin-top: 12px; }
+  .box { border-radius: 16px; padding: 14px 16px; background: var(--bg); border: 1px solid var(--line); }
+  .box h4 { margin: 0 0 6px; font-size: 15px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+  .box.states h4 { color: var(--coral-deep); }
+  .box.criteria h4 { color: var(--sage); }
+  ul { margin: 0; padding-left: 20px; } li { margin: 4px 0; }
+  .criteria li::marker { content: "☐  "; color: var(--sage); }
+
+  /* Tour mock */
+  .mockwrap { display: grid; grid-template-columns: 240px 1fr; gap: 20px; align-items: center; }
+  @media (max-width: 600px) { .mockwrap { grid-template-columns: 1fr; justify-items: center; } }
+  .phone { width: 220px; height: 440px; border-radius: 32px; background: #1c1917; padding: 10px; position: relative; }
+  .screen { position: relative; width: 100%; height: 100%; border-radius: 24px; overflow: hidden;
+    background: linear-gradient(#0b8a6d 0 14%, #f1efe9 14%); }
+  .fakerow { position: absolute; left: 14px; right: 14px; height: 34px; border-radius: 10px; background: #dedad2; }
+  .spot { position: absolute; left: 150px; top: 18px; width: 40px; height: 40px; border-radius: 50%;
+    box-shadow: 0 0 0 3px #fff, 0 0 0 9999px var(--dim); outline: 4px solid var(--coral); outline-offset: 2px; cursor: pointer; }
+  @media (prefers-reduced-motion: no-preference) { .spot.pulse { animation: pulse 1.6s ease-out infinite; } }
+  @keyframes pulse { 0% { outline-offset: 2px; } 60% { outline-offset: 10px; outline-color: transparent; } 100% { outline-offset: 2px; } }
+  .tip { position: absolute; left: 12px; right: 12px; top: 74px; background: #fff; color: #2d2622; border-radius: 16px;
+    padding: 10px 12px; font-weight: 700; font-size: 16px; line-height: 1.3; }
+  .tip small { display: block; font-weight: 600; color: #c4502f; font-size: 13px; margin-top: 4px; min-height: 17px; }
+  .bar { position: absolute; left: 12px; right: 12px; bottom: 74px; height: 8px; border-radius: 99px; background: rgba(255,255,255,.35); }
+  .bar i { display: block; height: 100%; width: 43%; border-radius: 99px; background: var(--coral); }
+  .btns { position: absolute; left: 12px; right: 12px; bottom: 14px; display: flex; gap: 8px; }
+  .btns span { flex: 1; text-align: center; padding: 12px 0; border-radius: 14px; font-weight: 700; font-size: 14px; }
+  .btns .b { background: #fff; color: #2d2622; } .btns .n { background: #c4502f; color: #fff; flex: 2; }
+  .mocknote { font-size: 15px; color: var(--muted); }
+
+  .decisions { display: grid; gap: 10px; }
+  .decisions div { border-left: 4px solid var(--coral); padding: 4px 0 4px 12px; }
+  .decisions b { display: block; }
+  details { border: 1px solid var(--line); border-radius: 14px; padding: 0 16px; margin-top: 10px; }
+  details[open] { padding-bottom: 12px; }
+  summary { cursor: pointer; padding: 14px 0; font-weight: 700; }
+  .q { background: var(--coral-soft); border-radius: 14px; padding: 12px 16px; margin-top: 10px; }
+  .q b { color: var(--coral-deep); }
+  footer { margin-top: 28px; color: var(--muted); font-size: 14px; text-align: center; }
+  code { font-size: 14px; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <span class="tag">PRD · approved</span>
+    <h1>Show Me Once</h1>
+    <p class="lede">A helper shows a phone task once; AI turns it into a spotlight tour their parent follows alone, read aloud.</p>
+  </header>
+
+  <section>
+    <h2>Scope → PRD</h2>
+    <p class="grew">Scope said <i>“the parent follows the tour alone.”</i> Now we know exactly what that means: tapping the glowing circle advances, tapping elsewhere coaches <i>“Tap the glowing circle,”</i> each step is read aloud at 0.9 speed, and if voice isn't available the tour continues text-only.</p>
+  </section>
+
+  <section>
+    <h2>The core journey</h2>
+    <svg class="journey-svg" viewBox="0 0 860 330" role="img" aria-label="Journey: Landing, Create, Building, Review, Share on the helper side; Start, Steps, You did it on the parent side; Review can be reopened to edit the live tour">
+      <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0L10,5L0,10z" fill="var(--muted)"/></marker></defs>
+      <text x="10" y="22" font-size="13" font-weight="700" style="fill:var(--muted)">HELPER</text>
+      <g font-size="15" font-weight="700" text-anchor="middle">
+        <rect x="10" y="36" width="140" height="70" rx="16" fill="var(--coral-soft)"/><text x="80" y="66">1 · Landing</text><text x="80" y="88" font-size="12" font-weight="400">Make a guide</text>
+        <rect x="180" y="36" width="140" height="70" rx="16" fill="var(--coral-soft)"/><text x="250" y="66">2 · Create</text><text x="250" y="88" font-size="12" font-weight="400">video or screenshots</text>
+        <rect x="350" y="36" width="140" height="70" rx="16" fill="var(--coral-soft)"/><text x="420" y="66">3 · Building</text><text x="420" y="88" font-size="12" font-weight="400">keep this page open</text>
+        <rect x="520" y="36" width="140" height="70" rx="16" fill="var(--card)" stroke="var(--coral)" stroke-width="2"/><text x="590" y="66">4 · Review</text><text x="590" y="88" font-size="12" font-weight="400">move · edit · delete</text>
+        <rect x="690" y="36" width="150" height="70" rx="16" fill="var(--coral-soft)"/><text x="765" y="66">5 · Share</text><text x="765" y="88" font-size="12" font-weight="400">Send on WhatsApp</text>
+      </g>
+      <g stroke="var(--muted)" stroke-width="2" fill="none" marker-end="url(#a)">
+        <line x1="150" y1="71" x2="178" y2="71"/><line x1="320" y1="71" x2="348" y2="71"/>
+        <line x1="490" y1="71" x2="518" y2="71"/><line x1="660" y1="71" x2="688" y2="71"/>
+        <path d="M765,106 L765,196"/>
+        <path d="M690,92 C 670,130 610,130 600,108" stroke-dasharray="5 5"/>
+      </g>
+      <text x="640" y="142" font-size="12" text-anchor="middle" style="fill:var(--muted)">edit later → live</text>
+      <text x="10" y="186" font-size="13" font-weight="700" style="fill:var(--muted)">PARENT (WhatsApp link)</text>
+      <g font-size="15" font-weight="700" text-anchor="middle">
+        <rect x="690" y="200" width="150" height="70" rx="16" fill="var(--card)" stroke="var(--coral)" stroke-width="2"/><text x="765" y="230">6 · Start</text><text x="765" y="252" font-size="12" font-weight="400">unlocks voice</text>
+        <rect x="390" y="200" width="260" height="70" rx="16" fill="var(--card)" stroke="var(--coral)" stroke-width="2"/><text x="520" y="230">Steps 1…n</text><text x="520" y="252" font-size="12" font-weight="400">spotlight · voice · tap circle / Got it</text>
+        <rect x="150" y="200" width="200" height="70" rx="16" fill="var(--sage-soft)" stroke="var(--sage)" stroke-width="2"/><text x="250" y="230">7 · You did it!</text><text x="250" y="252" font-size="12" font-weight="400">Start again</text>
+      </g>
+      <g stroke="var(--muted)" stroke-width="2" fill="none" marker-end="url(#a)">
+        <line x1="690" y1="235" x2="652" y2="235"/><line x1="390" y1="235" x2="352" y2="235"/>
+        <path d="M150,250 C 60,320 640,330 690,262" stroke-dasharray="5 5"/>
+      </g>
+      <text x="420" y="318" font-size="12" text-anchor="middle" style="fill:var(--muted)">forgot? reopen the same link</text>
+    </svg>
+    <ol class="journey-list">
+      <li><b>Landing</b> → Make a guide</li>
+      <li><b>Create</b>: task name + video (3–90 s) or 2–15 screenshots; privacy notice</li>
+      <li><b>Building</b>: friendly stages; “Please keep this page open.”</li>
+      <li><b>Review</b>: move circle, edit text, delete step, publish (re-openable to edit live)</li>
+      <li><b>Share</b>: editable message → Send on WhatsApp / Copy link</li>
+      <li><b>Start</b> (parent): huge button, unlocks voice</li>
+      <li><b>Steps</b>: spotlight, voice, tap the circle or Got it, next → <b>You did it!</b></li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Screen by screen</h2>
+    <div class="tabs" role="tablist">
+      <button role="tab" aria-selected="true" data-p="p1">Landing + Create</button>
+      <button role="tab" aria-selected="false" data-p="p2">Review</button>
+      <button role="tab" aria-selected="false" data-p="p3">Share</button>
+      <button role="tab" aria-selected="false" data-p="p4">Tour</button>
+      <button role="tab" aria-selected="false" data-p="p5">Missing guide</button>
+    </div>
+
+    <div class="panel active" id="p1">
+      <h3>Landing + Create</h3><span class="addr">/</span>
+      <div class="cols">
+        <div class="box"><h4>Behavior</h4><ul>
+          <li>“Show it once. They've got it forever.” + 3-step explainer + <b>Make a guide</b></li>
+          <li>Task name (required); one video <i>or</i> 2–15 screenshots with order preview</li>
+          <li>Notice: don't record passwords, PINs or balances</li>
+          <li>Building stages: Reading your video… → Finding the taps… → Writing the steps… + “Please keep this page open.”</li>
+        </ul></div>
+        <div class="box states"><h4>What if</h4><ul>
+          <li>Video won't open → message + switch to screenshots</li>
+          <li>Under 3 s → “That recording is too short — try recording the whole task.”</li><li>Over 90 s → “Shorter is clearer! Record just this one task, under 90 seconds.” Both: Choose another video + screenshots</li>
+          <li>&lt;2 or &gt;15 screenshots → inline message, button disabled</li>
+          <li>AI failure → “Something went wrong…” + Try again (upload kept)</li>
+          <li>No steps → “I couldn't spot any taps in this one.” + Try again + tips</li>
+        </ul></div>
+        <div class="box criteria"><h4>Done when</h4><ul>
+          <li>iPhone recording → guide → Review</li>
+          <li>Android recording → guide → Review</li>
+          <li>2–15 screenshots → guide → Review</li>
+          <li>Stages visibly change while waiting</li>
+        </ul></div>
+      </div>
+    </div>
+
+    <div class="panel" id="p2">
+      <h3>Review</h3><span class="addr">/g/[id]/review (needs edit key)</span>
+      <div class="cols">
+        <div class="box"><h4>Behavior</h4><ul>
+          <li>Step cards: number, screenshot + circle, editable instruction</li>
+          <li>Drag circle (stays inside the screenshot); delete step with confirm</li>
+          <li>Confidence &lt; 0.6 → “Please check this step”</li>
+          <li>Sensitive flag → banner at top</li>
+          <li><b>Publish</b> → Share; once published it's <b>Save changes</b> and edits go live</li>
+          <li><b>Delete this guide</b> → confirm → “Guide deleted”</li>
+        </ul></div>
+        <div class="box states"><h4>What if</h4><ul>
+          <li>All steps deleted → Publish disabled, “Keep at least one step.”</li>
+          <li>Empty instruction → can't publish that step</li>
+          <li>No/wrong edit key → “This link can't edit this guide.”</li>
+        </ul></div>
+        <div class="box criteria"><h4>Done when</h4><ul>
+          <li>Move / edit / delete all show in the tour after publishing</li>
+          <li>Editing a published guide changes the live tour</li>
+          <li>Deleted guide's link shows the missing-guide page</li>
+        </ul></div>
+      </div>
+    </div>
+
+    <div class="panel" id="p3">
+      <h3>Share</h3><span class="addr">/g/[id]/share</span>
+      <div class="cols">
+        <div class="box"><h4>Behavior</h4><ul>
+          <li>Tour link + <b>Copy link</b> (“Copied!”)</li>
+          <li>Editable message, prefilled: “Hi! I made you a simple step-by-step guide for [task]. Just tap the link and follow along at your own pace. 💛 [link]”</li>
+          <li><b>Send on WhatsApp</b> sends whatever's in the box</li>
+        </ul></div>
+        <div class="box states"><h4>What if</h4><ul>
+          <li>Helper removes the link → added back on a new line at the end</li>
+        </ul></div>
+        <div class="box criteria"><h4>Done when</h4><ul>
+          <li>On a phone, Send on WhatsApp opens WhatsApp with the edited message and a working link</li>
+        </ul></div>
+      </div>
+    </div>
+
+    <div class="panel" id="p4">
+      <h3>Tour</h3><span class="addr">/g/[id] (public)</span>
+      <div class="mockwrap" style="margin-top:12px">
+        <div class="phone" aria-label="Interactive mock of a tour step">
+          <div class="screen" id="mockscreen">
+            <div class="fakerow" style="top:150px"></div><div class="fakerow" style="top:194px"></div><div class="fakerow" style="top:238px"></div>
+            <div class="spot pulse" id="spot" title="the glowing circle"></div>
+            <div class="tip">Tap the green phone button at the top<small id="coach"></small></div>
+            <div class="bar"><i></i></div>
+            <div class="btns"><span class="b">Back</span><span class="n">Got it, next</span></div>
+          </div>
+        </div>
+        <div>
+          <p class="mocknote"><b>Try it:</b> tap the dimmed screenshot to see the coaching, or tap the glowing circle. (Illustrative only — not a real screenshot.)</p>
+          <ul>
+            <li>Start screen: title + huge <b>Start</b> (unlocks voice)</li>
+            <li>Dimmed screenshot, bright spotlight, coral ring with white outline, pulsing</li>
+            <li>Big tooltip above/below target; “Step 3 of 7”</li>
+            <li>Read aloud at ~0.9 speed; <b>Hear again</b>; speech stops when moving on</li>
+            <li>Tap circle → next; tap elsewhere → pulse + “Tap the glowing circle.”</li>
+            <li>“You did it!” (sage) + Start again</li>
+          </ul>
+        </div>
+      </div>
+      <div class="cols">
+        <div class="box states"><h4>What if</h4><ul>
+          <li>No voice → text-only, Hear again hidden</li>
+          <li>Reduced motion → steady ring, no transitions</li>
+          <li>Back on step 1 → hidden/disabled</li>
+        </ul></div>
+        <div class="box criteria"><h4>Done when</h4><ul>
+          <li>Phone browser: Start → every step → You did it!</li>
+          <li>Each instruction heard; Hear again repeats</li>
+          <li>Outside tap doesn't advance, shows coaching</li>
+          <li>Spotlight on target at 360 px, portrait</li>
+        </ul></div>
+      </div>
+    </div>
+
+    <div class="panel" id="p5">
+      <h3>Missing guide</h3><span class="addr">unknown, draft or deleted link</span>
+      <div class="cols"><div class="box"><h4>Behavior</h4><ul>
+        <li>“We can't find this guide. Ask the person who sent it for a new link.” — warm, never an error code</li>
+      </ul></div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Look and feel</h2>
+    <p style="margin-top:0">Warm, calm, never techy — like Headspace. Fredoka headings, Nunito body.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:10px">
+      <span class="box" style="background:#fbf6ee;color:#2d2622">Cream background</span>
+      <span class="box" style="background:#ef7b5f;color:#2d2622">Coral · actions</span>
+      <span class="box" style="background:#c4502f;color:#fff">Deep coral · under white text</span>
+      <span class="box" style="background:#e2efe6;color:#2d2622">Sage · success only</span>
+      <span class="box" style="background:#221d1a;color:#f4ece3">Warm charcoal · dark</span>
+      <span class="box" style="background:#555;color:#fff;outline:4px solid #ef7b5f;box-shadow:0 0 0 7px #fff">Ring: coral + white outline</span>
+    </div>
+    <p style="margin-bottom:0">Tour: body ≥ 22 px, tap targets ≥ 56 px, high contrast, light + dark, reduced motion respected.</p>
+  </section>
+
+  <section>
+    <h2>Your decisions</h2>
+    <div class="decisions">
+      <div><b>Drag-to-move only</b>fixes most AI misses; resize deferred</div>
+      <div><b>Delete this guide is in</b>someone's phone screenshots shouldn't stay online with no way out</div>
+      <div><b>Published guides stay editable</b>fix mistakes after sending</div>
+      <div><b>Spotlight tap advances; elsewhere coaches</b>mirrors the real action without stray skips</div>
+      <div><b>Voice at ~0.9, text-only fallback</b>slower is kinder</div>
+      <div><b>Editable share message</b>helpers write to different people</div>
+      <div><b>Coral ring + white outline; sage = success only</b>stands out on any screenshot</div>
+    </div>
+    <details><summary>Deferred, later, and non-goals</summary>
+      <ul>
+        <li><b>Deferred:</b> circle resize; remembering parent progress; a list of my guides</li>
+        <li><b>Later:</b> reorder steps; per-step voice notes; multiple languages</li>
+        <li><b>Non-goals:</b> accounts, payments, analytics, live overlay, native apps, editing beyond move/text/delete, dashboards</li>
+      </ul>
+    </details>
+  </section>
+
+  <section>
+    <h2>Open questions</h2>
+    <p style="margin:0">None — video length (3–90 s) and the removed-link behavior are resolved.</p>
+  </section>
+
+  <footer>Companion to <code>devpost/prd.md</code> — the Markdown is canonical.</footer>
+</main>
+<script>
+  document.querySelectorAll('.tabs button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      document.querySelectorAll('.tabs button').forEach(function (x) { x.setAttribute('aria-selected', x === b); });
+      document.querySelectorAll('.panel').forEach(function (p) { p.classList.toggle('active', p.id === b.dataset.p); });
+    });
+  });
+  var spot = document.getElementById('spot'), coach = document.getElementById('coach'), t;
+  document.getElementById('mockscreen').addEventListener('click', function (e) {
+    clearTimeout(t);
+    if (e.target === spot) { coach.textContent = '✓ Next step!'; }
+    else if (!e.target.closest('.btns')) { coach.textContent = 'Tap the glowing circle.'; }
+    t = setTimeout(function () { coach.textContent = ''; }, 1800);
+  });
+</script>
+</body>
+</html>
