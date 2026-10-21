@@ -79,7 +79,7 @@ Build mode: fast (chosen in `learner-profile.md`: "build end to end without stop
   Learner check: Open the review link for a guide, move a circle, reword a step, delete one, and save. Open the tour on your phone; are the changes there? Then delete a test guide and confirm its link no longer works.
   Commit: `Add the review editor, save changes, and delete guide`
 
-- [ ] **4. Send it on WhatsApp**
+- [x] **4. Send it on WhatsApp**
   Becomes usable: After publishing, the helper lands on `/g/[id]/share`. It shows the link, **Copy link** ("Copied!" in sage), and the editable message prefilled with the PRD text. **Send on WhatsApp** opens WhatsApp with exactly what's in the box, and adds the link back on its own line if it was removed. A "Back to review" link appears when this browser has the key.
   Why now: Sharing closes the helper's loop and is the start of the demo. It's small and depends on publishing (slices 2–3).
   PRD ref: `prd.md > Sharing`
@@ -162,4 +162,6 @@ Activity mode:
 - The review page only saves an edit key after the server accepts it, trying the link's key and then the saved one — opening a link with a wrong key used to overwrite the good saved key and lock the helper out.
 - `removeGuideFiles` now throws on storage errors so "Delete this guide" can't report success while screenshots remain; the slice 1 build had silently left 8 unused frames online (removed).
 - Wide targets (e.g. a box spanning a whole icon row) can be moved but not shrunk, since circle resize is deferred; the low-confidence badge flags them for the helper.
+- The share message puts the task name in quotes ("…guide for \"Send a video on WhatsApp\"…") — task names are written as instructions, so splicing them into the PRD sentence read awkwardly; the rest of the PRD wording is unchanged.
+- Copy link falls back to select-and-copy when the clipboard API is blocked; the tour link is built from the page's own address so preview and production links both work.
 

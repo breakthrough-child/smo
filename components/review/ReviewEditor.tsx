@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { candidateEditKeys, forgetEditKey, saveEditKey } from "@/lib/editKeyClient";
 import type { Target } from "@/lib/ai/schema";
 import type { PublicGuide, StepWithUrl } from "@/lib/guides";
@@ -21,6 +21,7 @@ type Save = { state: "idle" } | { state: "saving" } | { state: "saved" } | { sta
 
 export function ReviewEditor() {
   const { id } = useParams<{ id: string }>();
+  const router = useRouter();
   const [load, setLoad] = useState<Load>({ state: "loading" });
   const [steps, setSteps] = useState<StepWithUrl[]>([]);
   const [dirty, setDirty] = useState(false);
@@ -92,8 +93,8 @@ export function ReviewEditor() {
     }).catch(() => null);
     if (!res?.ok) return setSave({ state: "failed" });
     setDirty(false);
+    if (!isLive) return router.push(`/g/${id}/share`); // first publish: straight to sharing
     setSave({ state: "saved" });
-    setLoad({ state: "ready", guide: { ...guide, status: "published" } });
   }
 
   async function deleteGuide() {
@@ -174,8 +175,8 @@ export function ReviewEditor() {
               {save.state === "saving" ? "Saving…" : isLive ? "Save changes" : "Publish"}
             </Button>
             {isLive && (
-              <Link href={`/g/${id}`} className={buttonClass("secondary", "flex-1")}>
-                Open tour
+              <Link href={`/g/${id}/share`} className={buttonClass("secondary", "flex-1")}>
+                Share
               </Link>
             )}
           </div>
