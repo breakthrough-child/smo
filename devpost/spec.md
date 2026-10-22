@@ -112,6 +112,11 @@ Parent phone ──GET /g/{id}──▶ server component ──▶ guide + 1h si
   - Caveat: if Fluid Compute were switched off on the project, the older, lower limits would apply, so leave it on.
 - **Demo recording:** use the deployed URL. Upload the WhatsApp recording, review, publish, send on WhatsApp, then the parent's phone opens the link and does the tour with voice. Also show one error state (for example the too-long video message).
 
+### Shared links
+- **Live app:** https://smo-nu.vercel.app (checked without sign-in: landing loads, unknown guide links show the not-found page, the API refuses requests without an edit key, and no secret keys appear in the public JavaScript).
+- **Public repository:** https://github.com/breakthrough-child/smo
+- **Demo video:** not recorded yet.
+
 ## Look and Feel
 From `prd.md > Look and Feel` and `scope.md > Inspiration & Identity`. Headspace-like: warm, calm, rounded, never techy.
 
