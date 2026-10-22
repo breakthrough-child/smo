@@ -54,6 +54,7 @@ You need Node 22+, a Supabase project, and an Anthropic API key.
    | `NEXT_PUBLIC_SUPABASE_URL` | Supabase → Project Settings → API | no |
    | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | publishable key (`sb_publishable_…`) or legacy anon key | no — it can read nothing |
    | `SUPABASE_SECRET_KEY` | secret key (`sb_secret_…`) or legacy service_role key | yes — server only |
+   | `NEXT_PUBLIC_DEMO_GUIDE_ID` | optional; ID of a published guide (the part after `/g/` in its tour link) for the landing page's "See an example guide" button — hidden when empty | no |
 
 3. **Database** — in Supabase open **SQL Editor → New query**, paste [`supabase/schema.sql`](supabase/schema.sql), and **Run**. Then check the setup (prints no secrets; creates the private bucket if it's missing):
 
@@ -81,7 +82,7 @@ You need Node 22+, a Supabase project, and an Anthropic API key.
 
 1. Push the repo to GitHub.
 2. In Vercel: **Add New → Project**, import the repo (Next.js defaults are fine).
-3. Add the five environment variables above for **Production** and **Preview**.
+3. Add the environment variables above for **Production** and **Preview** (`NEXT_PUBLIC_DEMO_GUIDE_ID` is optional; redeploy after changing it, since `NEXT_PUBLIC_` values are built in).
 4. Deploy. Keep **Fluid Compute** on (the default): the build route sets `maxDuration = 120`, within every plan's limit.
 
 ## Privacy and safety

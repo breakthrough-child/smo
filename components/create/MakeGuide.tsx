@@ -1,9 +1,16 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
+import { buttonClass } from "@/components/ui/Button";
 import { CreateForm } from "./CreateForm";
 
-/** The landing page's big button; reveals the create form in place (prd.md > Screens and Layout). */
+// A published guide to show visitors. Set in the environment so it can be swapped without code changes;
+// the button is hidden when it's missing or isn't a guide ID. NEXT_PUBLIC_ values are fixed at build time.
+const DEMO_GUIDE_ID = process.env.NEXT_PUBLIC_DEMO_GUIDE_ID?.trim();
+const demoId = DEMO_GUIDE_ID && /^[0-9a-f-]{36}$/i.test(DEMO_GUIDE_ID) ? DEMO_GUIDE_ID : null;
+
+/** The landing page's big buttons; "Make a guide" reveals the create form in place (prd.md > Screens and Layout). */
 export function MakeGuide() {
   const [open, setOpen] = useState(false);
   if (open) {
@@ -14,12 +21,19 @@ export function MakeGuide() {
     );
   }
   return (
-    <button
-      type="button"
-      onClick={() => setOpen(true)}
-      className="min-h-20 w-full rounded-3xl bg-coral-deep text-[28px] font-bold text-white shadow-lg shadow-coral-deep/25 transition hover:brightness-110"
-    >
-      Make a guide
-    </button>
+    <div className="flex flex-col gap-3 sm:flex-row">
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="min-h-20 w-full flex-1 rounded-3xl bg-coral-deep text-[28px] font-bold text-white shadow-lg shadow-coral-deep/25 transition hover:brightness-110"
+      >
+        Make a guide
+      </button>
+      {demoId && (
+        <Link href={`/g/${demoId}`} className={buttonClass("secondary", "min-h-20 flex-1 rounded-3xl text-[22px]")}>
+          See an example guide
+        </Link>
+      )}
+    </div>
   );
 }
