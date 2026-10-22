@@ -127,23 +127,24 @@ Build mode: fast (chosen in `learner-profile.md`: "build end to end without stop
 ## Hands-on Checkpoints
 
 - [x] Early usable behavior explored — after slice 2, on the deployed URL (learner pushed to GitHub and deployed on Vercel; tested on Android). Findings: only ~4 steps per guide, voice only on "Hear again", slow uploads → fixed in the post-checkpoint round. iPhone moves to the final phone tests.
-- [ ] Final kick-the-tires exploration and feedback completed
+- [x] Final kick-the-tires exploration and feedback completed — learner tested the live URL on iPhone (Safari) and Android (Chrome): video upload including the HEVC iPhone original, steps, review editing, publish, WhatsApp share, voice on every step, the screenshots path, error messages and delete all worked; circles were accurate.
 
 ## Final Review
 
-- [ ] Final review complete — feedback resolved and learner confirms ready to ship
+- [x] Final review complete — feedback resolved and learner confirms ready to ship
+  Outcome: no changes requested in the final round. Afterwards all test guides (they showed real WhatsApp chats) and their screenshots were deleted at the learner's request; Supabase is empty.
 
 ## Code Tour and App Map
 
-- [ ] Learning activity complete — guided route, focused alternative, prior practice connected, or brief recap
-- [ ] Optional edit and transfer reflection addressed — offered/declined/already covered/not applicable as appropriate
-- [ ] `devpost/app-map.html` generated from finished code, checked, and shown, including a project-grounded practice to reuse
+- [x] Learning activity complete — guided route, focused alternative, prior practice connected, or brief recap
+- [x] Optional edit and transfer reflection addressed — offered/declined/already covered/not applicable as appropriate
+- [x] `devpost/app-map.html` generated from finished code, checked, and shown, including a project-grounded practice to reuse
 
-Activity and evidence:
-Route and stops:
-Edit outcome:
-Reflection:
-Activity mode:
+Activity and evidence: Prior practice connected (focused alternative). The learning goal (reliable structured output) was exercised during the build: `tests/validate.test.ts` covers shape-valid but meaning-broken replies; build logs for three development builds showed `attempt: 1, hard: []`; the "only 4 steps" checkpoint bug was traced by counting frames at each stage to dedupe, not the model (Revisions).
+Route and stops: Reference route in the app map (not toured interactively): `lib/frames/extract.ts` `extractVideoFrames` + `lib/frames/select.ts` `isDuplicate`/`selectFrames` → `lib/ai/buildGuide.ts` `buildGuide` + `lib/ai/validate.ts` `checkGuide` → `components/tour/Tour.tsx` `goTo` + `components/tour/Spotlight.tsx` `Spotlight`.
+Edit outcome: Not applicable — no tour edit; the learner moved straight to shipping.
+Reflection: Transfer question offered at hand-off; any answer goes in the ignored learner profile.
+Activity mode: Prior practice connected, plus the app map (`devpost/app-map.html`, snapshot of 977dd1d).
 
 ## Revisions
 - Storage object keys are `{id}/frame-{n}.jpg` inside the `guides` bucket — the spec's `guides/{id}/frame-{n}.jpg` meant bucket + path; writing it literally would have nested a second `guides/` folder.
