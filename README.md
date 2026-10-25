@@ -55,6 +55,7 @@ You need Node 22+, a Supabase project, and an Anthropic API key.
    | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | publishable key (`sb_publishable_…`) or legacy anon key | no — it can read nothing |
    | `SUPABASE_SECRET_KEY` | secret key (`sb_secret_…`) or legacy service_role key | yes — server only |
    | `NEXT_PUBLIC_DEMO_GUIDE_ID` | optional; ID of a published guide (the part after `/g/` in its tour link) for the landing page's "See an example guide" button — hidden when empty | no |
+   | `NEXT_PUBLIC_CREATION_PAUSED` | optional; `true` shows a "New guides are paused" notice on the landing page — hidden otherwise | no |
 
 3. **Database** — in Supabase open **SQL Editor → New query**, paste [`supabase/schema.sql`](supabase/schema.sql), and **Run**. Then check the setup (prints no secrets; creates the private bucket if it's missing):
 
